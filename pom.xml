@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+        <modelVersion>4.0.0</modelVersion>
+
+        <groupId>b0a11a10-9a2e-4b71-b6b6-88c719e79179</groupId>
+        <artifactId>workshop-managed-projects</artifactId>
+        <version>1.0.0</version>
+        <packaging>pom</packaging>
+
+        <name>public-cicd-demo-assets</name>
+
+        <modules>
+                <module>cicd-cleanup</module>
+        </modules>
+
+</project>
