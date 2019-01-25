@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:validation="http://www.mulesoft.org/schema/mule/validation"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
+
+	<flow name="globalFlow" doc:id="da00c2ec-2679-4296-bb4d-a1a602d96844">
+		<scheduler doc:name="Scheduler" doc:id="ec8afd1f-258b-4561-aa6c-cef2fb76e03d">
+			<scheduling-strategy>
+				<fixed-frequency frequency="${frequency}"/>
+			</scheduling-strategy>
+		</scheduler>
+		<http:request method="POST" doc:name="Login" doc:id="e46a3e61-44c5-4fdd-b74c-838cf1b34277" config-ref="HTTP_Request_configuration" path="/accounts/login" target="accessToken" targetValue='#["Bearer" ++ " " ++ (payload.access_token default "111-111-111-111")]'>
+			<http:body><![CDATA[#[%dw 2.0
+output application/json
+---
+{
+	username:p('anypoint.user'),
+	password:p('anypoint.password')
+}]]]></http:body>
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"Content-Type" : "application/json"
+}]]]></http:headers>
+		</http:request>
+		<flow-ref doc:name="Flow Reference" doc:id="741059c4-4576-42ea-a790-24efd7b8367c" name="cleanApp"/>
+	</flow>
+	<flow name="cleanApp" doc:id="8df2e716-bdb7-4a4c-8e5d-cd0b062d101a">
+		<scatter-gather doc:name="Scatter-Gather" doc:id="125feacb-4c57-4aa8-a713-bc39b77b7411" >
+			<route >
+				<http:request method="GET" doc:name="List production applications" doc:id="b0a95e0c-f683-4ab5-bbe0-3a5815cd97ff" config-ref="HTTP_Request_configuration" path="/armui/api/v1/applications">
+					<http:headers><![CDATA[#[output application/java
+---
+{
+	"Authorization" : vars.accessToken,
+	"X-ANYPNT-ORG-ID" : p('anypoint.org'),
+	"X-ANYPNT-ENV-ID" : p('anypoint.prdEnv')
+}]]]></http:headers>
+				</http:request>
+				<ee:transform doc:name="Transform Message" doc:id="1d74fe13-714a-49df-b1d2-7bcb090ee049" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload.data.artifact map (($) ++ env: "prd")]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</route>
+			<route >
+				<http:request method="GET" doc:name="List development applications" doc:id="6d1e2287-78d3-4b6d-84c5-12e3545fed36" config-ref="HTTP_Request_configuration" path="/armui/api/v1/applications">
+			<http:headers><![CDATA[#[output application/java
+---
+{
+	"Authorization" : vars.accessToken,
+	"X-ANYPNT-ORG-ID" : p('anypoint.org'),
+	"X-ANYPNT-ENV-ID" : p('anypoint.devEnv')
+}]]]></http:headers>
+		</http:request>
+				<ee:transform doc:name="Transform Message" doc:id="5a118e99-ee96-4961-b0c7-f6647a0c8bca" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload.data.artifact map (($) ++ env: "dev")]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</route>
+		</scatter-gather>
+		<ee:transform doc:name="Transform Message" doc:id="5572907d-965f-432b-a0b1-7e7598a90209">
+				<ee:message>
+					<ee:set-payload><![CDATA[%dw 2.0
+import * from dw::util::Timer
+output application/java
+var elapsedTime = 8640000
+var today = toMilliseconds(now())
+---
+((payload."0".payload default []) ++
+(payload."1".payload default [])) filter(value, index) -> (value.name != p('mockApplication') and today - value.lastUpdateTime > elapsedTime)]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+		<validation:is-not-empty-collection doc:name="Is not empty collection" doc:id="9ce62de7-b44f-4a09-8d1b-caa07e895921" />
+		<foreach doc:name="For Each" doc:id="cf549e0f-2ca1-4f52-b9bb-91fd195c2c33" >
+			<set-variable value="#[if (payload.env == &quot;dev&quot;) p('anypoint.devEnv') else p('anypoint.prdEnv')]" doc:name="Save Environment" doc:id="abb10127-b5f4-4f75-a910-9a9e3bcf69df" variableName="environment"/>
+			<flow-ref doc:name="Delete Suite" doc:id="1a9564be-ab4b-4be0-a1f7-491afcd84431" name="clean-functional-monitoring"/>
+			<http:request method="DELETE" doc:name="Delete Application" doc:id="5a7c4864-7291-4061-8170-564013f5a7c8" config-ref="HTTP_Request_configuration" path="/cloudhub/api/v2/applications/{app_name}">
+				<http:body ><![CDATA[#[output application/json
+---
+{}]]]></http:body>
+				<http:headers ><![CDATA[#[output application/java
+---
+{
+	"Authorization" : vars.accessToken,
+	"X-ANYPNT-ORG-ID" : p('anypoint.org'),
+	"X-ANYPNT-ENV-ID" : vars.environment
+}]]]></http:headers>
+				<http:uri-params ><![CDATA[#[output application/java
+---
+{
+	"app_name" : vars.applicationName
+}]]]></http:uri-params>
+			</http:request>
+			<tracking:custom-event doc:name="Custom Business Event" doc:id="1bc24016-1463-484c-9ca7-32aa52476a65" event-name="Application Deleted">
+				<tracking:meta-data key="Application Name" value="#[vars.applicationName]" />
+				<tracking:meta-data key="Environment" value="#[vars.environment]" />
+			</tracking:custom-event>
+		</foreach>
+		<error-handler >
+			<on-error-continue enableNotifications="false" logException="false" doc:name="On Error Continue" doc:id="92af6d79-4206-44fe-a96d-e826fd95e6aa" type="VALIDATION:EMPTY_COLLECTION">
+				<logger level="INFO" doc:name="Logger" doc:id="3842e6ab-2bd2-4312-ba7d-d39ef7e50fc6" message="No Application to be deleted"/>
+			</on-error-continue>
+		</error-handler>
+	</flow>
+	<flow name="clean-functional-monitoring" doc:id="a6173584-6dc1-4041-b28a-bd2e9c6dec1f" >
+		<set-variable value='#[payload.name default ""]' doc:name="Save Application Name" doc:id="bf1e7018-0561-4a73-9543-23d517f9641e" variableName="applicationName"/>
+		<http:request method="GET" doc:name="List Suites" doc:id="7dc2311c-1ec9-48a4-a6ab-eddbceb7e3d2" config-ref="HTTP_Request_configuration" path="/apitesting/api/v1/organizations/{org_id}/suites">
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"Authorization" : vars.accessToken
+}]]]></http:headers>
+			<http:uri-params ><![CDATA[#[output application/java
+---
+{
+	"org_id" : p('anypoint.org')
+}]]]></http:uri-params>
+		</http:request>
+		<ee:transform doc:name="Transform Message" doc:id="42456ca2-5d5f-41bd-8a5f-5da3a0578fa0" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+(payload default []) filter(suite, index)->(suite.assetId contains(vars.applicationName))]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<validation:is-not-empty-collection doc:name="Is not empty collection" doc:id="f0cc283c-4087-410e-b4b0-b0d9c2a49ba4" />
+		<foreach doc:name="For Each" doc:id="05813930-4b67-4b1b-bbf8-f80626372e4b" >
+			<http:request method="DELETE" doc:name="Delete Suite" doc:id="b7b0d5a7-9981-4e9f-963c-5ab0d2d242d7" config-ref="HTTP_Request_configuration" path="/apitesting/api/v1/organizations/{org_id}/suites/{suite_id}/versions/0.0.1">
+				<http:headers ><![CDATA[#[output application/java
+---
+{
+	"Authorization" : vars.accessToken
+}]]]></http:headers>
+				<http:uri-params ><![CDATA[#[output application/java
+---
+{
+	"org_id" : p('anypoint.org'),
+	"suite_id" : payload.id
+}]]]></http:uri-params>
+			</http:request>
+		</foreach>
+		<error-handler >
+			<on-error-continue enableNotifications="false" logException="false" doc:name="On Error Continue" doc:id="484d62a8-f39a-4c69-a63d-b5eccd9fd3ee" type="VALIDATION:EMPTY_COLLECTION">
+				<logger level="INFO" doc:name="Logger" doc:id="2be6c908-f5f2-473b-95bb-bb304f08a1fb" message="No Suite Found"/>
+			</on-error-continue>
+		</error-handler>
+	</flow>
+
+
+</mule>

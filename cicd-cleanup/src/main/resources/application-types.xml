@@ -1,0 +1,115 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="list_apps_response" format="json">
+      <types:shape format="weave" example="examples/list_apps.json"><![CDATA[%dw 2.0
+type list_apps_response = {|
+  data: Array<{|
+    id: String, 
+    target: {| "type": String |}, 
+    artifact: {|
+      lastUpdateTime: Number {"typeId": "double"}, 
+      createTime: Null, 
+      name: String, 
+      fileName: String
+    |}, 
+    lastReportedStatus: String, 
+    details: {| domain: String |}
+  |}>, 
+  total: Number {"typeId": "int"}
+|} {"MetadataFormat": "json",
+"example": "{\"data\":[{\"id\":\"1p-public-cicd-mock\",\"target\":{\"type\":\"CLOUDHUB\"},\"artifact\":{\"lastUpdateTime\":1548273879615,\"createTime\":null,\"name\":\"1p-public-cicd-mock\",\"fileName\":\"1p-public-cicd-mock-1.0.0-SNAPSHOT-mule-application.jar\"},\"lastReportedStatus\":\"STARTED\",\"details\":{\"domain\":\"1p-public-cicd-mock.us-e2.cloudhub.io\"}}],\"total\":1}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="login_response" format="json">
+      <types:shape format="weave" example="examples/login.json"><![CDATA[%dw 2.0
+type login_response = {|
+  access_token: String, 
+  token_type: String, 
+  redirectUrl: String
+|} {"MetadataFormat": "json",
+"example": "{\"access_token\":\"edaa433b-ca32-473d-8458-0510dc458e62\",\"token_type\":\"bearer\",\"redirectUrl\":\"\/home\/\"}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="artifact" format="json">
+      <types:shape format="weave" example="examples/artifact_example.json"><![CDATA[%dw 2.0
+type artifact = {|
+  lastUpdateTime: Number {"typeId": "double"}, 
+  createTime: Null, 
+  name: String, 
+  fileName: String
+|} {"MetadataFormat": "json",
+"example": "{\"lastUpdateTime\":1548273879615,\"createTime\":null,\"name\":\"1p-public-cicd-mock\",\"fileName\":\"1p-public-cicd-mock-1.0.0-SNAPSHOT-mule-application.jar\"}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="suites" format="json">
+      <types:shape format="weave" example="examples/suites_example.json"><![CDATA[%dw 2.0
+type suites = Array<{|
+  organizationId: String, 
+  groupId: String, 
+  assetId: String, 
+  lastExecuted: String, 
+  name: String, 
+  description: Null, 
+  "type": String, 
+  id: String, 
+  lastExecutionStart: String, 
+  lastExecutionEnd: Null, 
+  lastExecutionResult: Null, 
+  lastExecutionStatus: Null, 
+  lastExecutionId: Null
+|}> {"MetadataFormat": "json",
+"example": "[{\"organizationId\":\"b0a11a10-9a2e-4b71-b6b6-88c719e79179\",\"groupId\":\"b0a11a10-9a2e-4b71-b6b6-88c719e79179\",\"assetId\":\"fb-dev-hello-world.us-e2.cloudhub.io-COassPxr\",\"lastExecuted\":\"2019-01-25T19:00:03.282Z\",\"name\":\"dev-hello-world\",\"description\":null,\"type\":\"api-test\",\"id\":\"b0a11a10-9a2e-4b71-b6b6-88c719e79179:fb-dev-hello-world.us-e2.cloudhub.io-COassPxr\",\"lastExecutionStart\":\"2019-01-25T19:00:03.282Z\",\"lastExecutionEnd\":null,\"lastExecutionResult\":null,\"lastExecutionStatus\":null,\"lastExecutionId\":null},{\"organizationId\":\"b0a11a10-9a2e-4b71-b6b6-88c719e79179\",\"groupId\":\"b0a11a10-9a2e-4b71-b6b6-88c719e79179\",\"assetId\":\"fb-dev-hello-world2.us-e2.cloudhub.io-S9h03Ylf\",\"lastExecuted\":\"2019-01-25T19:00:03.243Z\",\"name\":\"dev-hello-world2\",\"description\":null,\"type\":\"api-test\",\"id\":\"b0a11a10-9a2e-4b71-b6b6-88c719e79179:fb-dev-hello-world2.us-e2.cloudhub.io-S9h03Ylf\",\"lastExecutionStart\":\"2019-01-25T19:00:03.243Z\",\"lastExecutionEnd\":null,\"lastExecutionResult\":null,\"lastExecutionStatus\":null,\"lastExecutionId\":null},{\"organizationId\":\"b0a11a10-9a2e-4b71-b6b6-88c719e79179\",\"groupId\":\"b0a11a10-9a2e-4b71-b6b6-88c719e79179\",\"assetId\":\"fb-hello-world2.us-e2.cloudhub.io-9dvGD5WK\",\"lastExecuted\":\"2019-01-25T19:00:03.226Z\",\"name\":\"hello-world2\",\"description\":null,\"type\":\"api-test\",\"id\":\"b0a11a10-9a2e-4b71-b6b6-88c719e79179:fb-hello-world2.us-e2.cloudhub.io-9dvGD5WK\",\"lastExecutionStart\":\"2019-01-25T19:00:03.226Z\",\"lastExecutionEnd\":null,\"lastExecutionResult\":null,\"lastExecutionStatus\":null,\"lastExecutionId\":null},{\"organizationId\":\"b0a11a10-9a2e-4b71-b6b6-88c719e79179\",\"groupId\":\"b0a11a10-9a2e-4b71-b6b6-88c719e79179\",\"assetId\":\"fb-hello-world.us-e2.cloudhub.io-wMyM5PKR\",\"lastExecuted\":\"2019-01-25T19:00:03.185Z\",\"name\":\"hello-world\",\"description\":null,\"type\":\"api-test\",\"id\":\"b0a11a10-9a2e-4b71-b6b6-88c719e79179:fb-hello-world.us-e2.cloudhub.io-wMyM5PKR\",\"lastExecutionStart\":\"2019-01-25T19:00:03.185Z\",\"lastExecutionEnd\":null,\"lastExecutionResult\":null,\"lastExecutionStatus\":null,\"lastExecutionId\":null}]"}
+
+]]></types:shape>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#6d1e2287-78d3-4b6d-84c5-12e3545fed36">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:message>
+          <types:payload type="list_apps_response"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#b0a95e0c-f683-4ab5-bbe0-3a5815cd97ff">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:message>
+          <types:payload type="list_apps_response"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#e46a3e61-44c5-4fdd-b74c-838cf1b34277">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:message>
+          <types:payload type="login_response"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#bf1e7018-0561-4a73-9543-23d517f9641e">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="artifact"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#7dc2311c-1ec9-48a4-a6ab-eddbceb7e3d2">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:message>
+          <types:payload type="suites"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+</types:mule>

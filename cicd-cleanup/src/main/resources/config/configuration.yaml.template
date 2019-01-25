@@ -1,0 +1,4 @@
+anypoint:
+  host: "anypoint.mulesoft.com"
+  port: "443"
+  user: 

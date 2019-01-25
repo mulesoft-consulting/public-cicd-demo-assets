@@ -1,0 +1,21 @@
+{
+    "data": [
+        {
+            "id": "1p-public-cicd-mock",
+            "target": {
+                "type": "CLOUDHUB"
+            },
+            "artifact": {
+                "lastUpdateTime": 1548273879615,
+                "createTime": null,
+                "name": "1p-public-cicd-mock",
+                "fileName": "1p-public-cicd-mock-1.0.0-SNAPSHOT-mule-application.jar"
+            },
+            "lastReportedStatus": "STARTED",
+            "details": {
+                "domain": "1p-public-cicd-mock.us-e2.cloudhub.io"
+            }
+        }
+    ],
+    "total": 1
+}
