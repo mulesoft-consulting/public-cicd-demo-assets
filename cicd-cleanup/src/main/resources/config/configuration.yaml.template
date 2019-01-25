@@ -1,4 +1,12 @@
 anypoint:
-  host: "anypoint.mulesoft.com"
-  port: "443"
-  user: 
+  host:
+  port:
+  user:
+  password:
+  org:
+  devEnv:
+  prdEnv:
+  
+frequency:
+mockApplication: 
+
