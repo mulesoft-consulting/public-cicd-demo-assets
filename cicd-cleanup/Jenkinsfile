@@ -5,7 +5,7 @@ pipeline {
   environment { //Global Environments
     DEPLOY_CREDS = credentials('deploy-anypoint-user') //Deployer user
     MULE_VERSION = '4.1.5'
-    BG="1Platform\\Public\\CICD Demo"
+    BG="1Platform\\Public\\CI-CD Demo"
     WORKER = "Tiny"
     ENVIRONMENT = 'Development'
     APP_NAME = 'public-cicd-demo-cleanup'
