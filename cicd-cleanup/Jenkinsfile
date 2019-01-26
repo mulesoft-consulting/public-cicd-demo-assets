@@ -5,7 +5,7 @@ pipeline {
   environment { //Global Environments
     DEPLOY_CREDS = credentials('deploy-anypoint-user') //Deployer user
     MULE_VERSION = '4.1.5'
-    BG="1Platform\\Public\\CICD\\ Demo"
+    BG="1Platform\\Public\\CICD Demo"
     WORKER = "Tiny"
     ENVIRONMENT = 'Development'
     APP_NAME = 'public-cicd-demo-cleanup'
@@ -27,7 +27,7 @@ pipeline {
 
     stage('Deploy') {//Deploy to Production
         steps {
-          sh 'mvn -V -B -DskipTests -pl cicd-cleanup deploy -DmuleDeploy -Dmule.version=$MULE_VERSION -Danypoint.username=$DEPLOY_CREDS_USR -Danypoint.password=$DEPLOY_CREDS_PSW -Dcloudhub.app=$APP_NAME -Dcloudhub.environment=$ENVIRONMENT -Dcloudhub.worker=$WORKER -Dcloudhub.bg=$BG'
+          sh 'mvn -V -B -DskipTests -pl cicd-cleanup deploy -DmuleDeploy -Dmule.version=$MULE_VERSION -Danypoint.username=$DEPLOY_CREDS_USR -Danypoint.password=$DEPLOY_CREDS_PSW -Dcloudhub.app=$APP_NAME -Dcloudhub.environment=$ENVIRONMENT -Dcloudhub.worker=$WORKER -Dcloudhub.bg="$BG"'
         }
     }
   }
