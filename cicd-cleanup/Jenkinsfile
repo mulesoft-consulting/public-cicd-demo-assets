@@ -1,0 +1,45 @@
+pipeline {
+  agent {
+    label 'mule-builder' // Name of the configure docker container
+  }
+  environment { //Global Environments
+    DEPLOY_CREDS = credentials('deploy-anypoint-user') //Deployer user
+    MULE_VERSION = '4.1.5'
+    BG = "Global SE Team""
+    WORKER = "Tiny"
+  }
+  stages {
+    stage('Prepare') {//Copy the configuration file according to the environment
+      steps {
+        configFileProvider([configFile(fileId: "${BRANCH_NAME}-config.yaml", replaceTokens: true, targetLocation: './src/main/resources/config/configuration.yaml')]) {
+            sh 'echo "Branch NAME: $BRANCH_NAME"'
+        }
+      }
+    }
+    stage('Build') {//Build the package
+      steps {
+        sh 'mvn -B -pl cicd-cleanup clean package -DskipTests'
+      }
+    }
+
+    stage('Deploy') {//Deploy to Production
+        environment {
+          ENVIRONMENT = 'Production'
+          APP_NAME = 'public-cicd-demo-cleanup'
+        }
+        steps {
+          sh 'mvn -V -B -DskipTests deploy -DmuleDeploy -Dmule.version=$MULE_VERSION -Danypoint.username=$DEPLOY_CREDS_USR -Danypoint.password=$DEPLOY_CREDS_PSW -Dcloudhub.app=$APP_NAME -Dcloudhub.environment=$ENVIRONMENT -Dcloudhub.bg=$BG -Dcloudhub.worker=$WORKER'
+        }
+    }
+  }
+
+  post {
+      always {
+       step([$class: 'hudson.plugins.chucknorris.CordellWalkerRecorder'])
+      }
+  }  
+
+  tools {// Select Tools to use
+    maven 'M3'
+  }
+}
