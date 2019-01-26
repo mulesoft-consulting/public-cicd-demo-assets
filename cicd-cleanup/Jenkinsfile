@@ -3,7 +3,7 @@ pipeline {
     label 'mule-builder' // Name of the configure docker container
   }
   environment { //Global Environments
-    DEPLOY_CREDS = credentials('deploy-anypoint-user') //Deployer user
+    DEPLOY_CREDS = credentials('deploy-sc-anypoint-user') //Deployer user
     MULE_VERSION = '4.1.5'
     WORKER = "Tiny"
   }
