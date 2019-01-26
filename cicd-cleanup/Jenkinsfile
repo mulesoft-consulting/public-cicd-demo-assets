@@ -8,7 +8,7 @@ pipeline {
     BG="1Platform\\Public\\CI-CD Demo"
     WORKER = "Tiny"
     ENVIRONMENT = 'Development'
-    APP_NAME = 'public-cicd-demo-cleanup'
+    APP_NAME = 'public-cicd-apps-cleanup'
   }
 
   stages {
