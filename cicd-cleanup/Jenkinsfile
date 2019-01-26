@@ -14,7 +14,7 @@ pipeline {
   stages {
     stage('Prepare') {//Copy the configuration file according to the environment
       steps {
-        configFileProvider([configFile(fileId: "${BRANCH_NAME}-configuration.yaml", replaceTokens: true, targetLocation: './src/main/resources/config/configuration.yaml')]) {
+        configFileProvider([configFile(fileId: "${BRANCH_NAME}-configuration.yaml", replaceTokens: true, targetLocation: './cicd-cleanup/src/main/resources/config/configuration.yaml')]) {
             sh 'echo "Branch NAME: $BRANCH_NAME"'
         }
       }

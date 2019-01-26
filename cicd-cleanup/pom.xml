@@ -45,7 +45,6 @@
 							<anypoint.platform.coreservice_base_uri>https://anypoint.mulesoft.com/accounts</anypoint.platform.coreservice_base_uri>
 							<anypoint.platform.platform_base_uri>https://anypoint.mulesoft.com/apiplatform</anypoint.platform.platform_base_uri>
 							<anypoint.platform.contracts_base_uri>https://anypoint.mulesoft.com/apigateway/ccs</anypoint.platform.contracts_base_uri>
-							<anypoint.platform.visualizer.layer>System</anypoint.platform.visualizer.layer>
 							<anypoint.user>${anypoint.username}</anypoint.user>
 							<anypoint.password>${anypoint.password}</anypoint.password>
 						</properties>
