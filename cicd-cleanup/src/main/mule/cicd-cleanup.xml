@@ -81,9 +81,14 @@ import * from dw::util::Timer
 output application/java
 var elapsedTime = p('elapsedTime') as Number
 var today = toMilliseconds(now())
+var skipApps = p('skipApps') splitBy(",")
 ---
 ((payload."0".payload default []) ++
-(payload."1".payload default [])) filter(value, index) -> (value.name != p('mockApplication') and today - value.lastUpdateTime > elapsedTime)]]></ee:set-payload>
+(payload."1".payload default [])) filter(value, index) -> (
+		(today - value.lastUpdateTime > elapsedTime) 
+	and 
+		not (skipApps contains(value.name))
+)]]></ee:set-payload>
 				</ee:message>
 			</ee:transform>
 		<validation:is-not-empty-collection doc:name="Is not empty collection" doc:id="9ce62de7-b44f-4a09-8d1b-caa07e895921" />

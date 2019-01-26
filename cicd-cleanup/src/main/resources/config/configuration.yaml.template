@@ -6,7 +6,7 @@ anypoint:
   org:
   devEnv:
   prdEnv:
-  
-frequency:
-mockApplication: 
+
+skipApps:  
+frequency: 
 elapsedTime:
