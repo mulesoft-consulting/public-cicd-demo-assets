@@ -15,6 +15,7 @@ http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/m
 				<fixed-frequency frequency="${frequency}"/>
 			</scheduling-strategy>
 		</scheduler>
+		<logger level="INFO" doc:name="Log Starting Process" doc:id="91341537-0a75-4c1e-8117-4a01fdd0f34e" message='#["Starting Proc: " ++ now() as String {format: "yyyy-MM-dd HH:mm:ss"}]'/>
 		<http:request method="POST" doc:name="Login" doc:id="e46a3e61-44c5-4fdd-b74c-838cf1b34277" config-ref="HTTP_Request_configuration" path="/accounts/login" target="accessToken" targetValue='#["Bearer" ++ " " ++ (payload.access_token default "111-111-111-111")]'>
 			<http:body><![CDATA[#[%dw 2.0
 output application/json
@@ -30,6 +31,7 @@ output application/json
 }]]]></http:headers>
 		</http:request>
 		<flow-ref doc:name="Flow Reference" doc:id="741059c4-4576-42ea-a790-24efd7b8367c" name="cleanApp"/>
+		<logger level="INFO" doc:name="Log Ending Process" doc:id="05c844fc-635d-4102-956a-59ce7a7a09c8" message='#["Ending Process: " ++ now() as String {format: "yyyy-MM-dd HH:mm:ss"}]'/>
 	</flow>
 	<flow name="cleanApp" doc:id="8df2e716-bdb7-4a4c-8e5d-cd0b062d101a">
 		<scatter-gather doc:name="Scatter-Gather" doc:id="125feacb-4c57-4aa8-a713-bc39b77b7411" >
@@ -77,7 +79,7 @@ payload.data.artifact map (($) ++ env: "dev")]]></ee:set-payload>
 					<ee:set-payload><![CDATA[%dw 2.0
 import * from dw::util::Timer
 output application/java
-var elapsedTime = 8640000
+var elapsedTime = p('elapsedTime') as Number
 var today = toMilliseconds(now())
 ---
 ((payload."0".payload default []) ++
