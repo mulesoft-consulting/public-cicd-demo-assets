@@ -74,7 +74,6 @@ payload.data.artifact map (($) ++ env: "dev")]]></ee:set-payload>
 				</ee:transform>
 			</route>
 		</scatter-gather>
-		<logger level="INFO" doc:name="Logger" doc:id="f3167ad6-402a-44d2-84d7-8fa79678e865" message="#[p('skipApps') splitBy(&quot;,&quot;)]"/>
 		<ee:transform doc:name="Transform Message" doc:id="5572907d-965f-432b-a0b1-7e7598a90209">
 				<ee:message>
 					<ee:set-payload><![CDATA[%dw 2.0
