@@ -1,0 +1,1 @@
+[{lastUpdateTime=1548442369902, createTime=null, name=dev-public-cicd-mock, fileName=1p-public-cicd-mock-1.0.0-SNAPSHOT-mule-application.jar, env=dev}, {lastUpdateTime=1548934657304, createTime=null, name=public-cicd-apps-cleanup, fileName=cicd-cleanup-1.0.0-mule-application.jar, env=dev}]
