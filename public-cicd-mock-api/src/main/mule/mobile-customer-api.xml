@@ -1,0 +1,457 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd ">
+    <http:listener-config name="mobile-customer-api-httpListenerConfig">
+        <http:listener-connection host="0.0.0.0" port="8081" />
+    </http:listener-config>
+    <apikit:config name="mobile-customer-api-config" raml="mobile-customer-api.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    <flow name="mobile-customer-api-main">
+        <http:listener config-ref="mobile-customer-api-httpListenerConfig" path="/api/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:router config-ref="mobile-customer-api-config" />
+        <error-handler>
+            <on-error-propagate type="APIKIT:BAD_REQUEST">
+                <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Bad request"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">400</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">404</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:METHOD_NOT_ALLOWED">
+                <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Method not allowed"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">405</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_ACCEPTABLE">
+                <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not acceptable"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">406</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:UNSUPPORTED_MEDIA_TYPE">
+                <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Unsupported media type"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">415</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_IMPLEMENTED">
+                <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not Implemented"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">501</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="mobile-customer-api-console">
+        <http:listener config-ref="mobile-customer-api-httpListenerConfig" path="/console/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:console config-ref="mobile-customer-api-config" />
+        <error-handler>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">404</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="put:\user\(userId)\shopping_cart:application\json:mobile-customer-api-config">
+        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core">
+            <ee:variables>
+                <ee:set-variable variableName="userId">attributes.uriParams.userId</ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <logger level="INFO" message="put:\user\(userId)\shopping_cart:application\json:mobile-customer-api-config" />
+    </flow>
+    <flow name="put:\user\(userId):application\json:mobile-customer-api-config">
+        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core">
+            <ee:variables>
+                <ee:set-variable variableName="userId">attributes.uriParams.userId</ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  code: "404",
+  message: "Resource not found"
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+    <flow name="get:\orders\order\(order_id):mobile-customer-api-config">
+        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core">
+            <ee:variables>
+                <ee:set-variable variableName="order_id">attributes.uriParams.order_id</ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  order_id: "order_22",
+  tracking_code: "12310391209318",
+  rel_self: "http://alc.mulesoft.com/api/orders/oder/order_22",
+  creation_date: "2015/12/31 10:00:00",
+  cost: {
+    price: 12.0,
+    tax: 1.0,
+    final_price: 13.0
+  },
+  shipping: {
+    shipping_address_id: "1122",
+    rel_address: "http://alc.mulesoft.com/api/users/user/vip_user_8/address/1122"
+  },
+  items: [
+    {
+      product_id: "121",
+      rel_product: "http://alc.mulesoft.com/api/products/product/121",
+      quantity: 1
+    }, 
+    {
+      product_id: "122",
+      rel_product: "http://alc.mulesoft.com/api/products/product/122",
+      quantity: 2
+    }
+  ]
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+    <flow name="get:\products\product\(product_id):mobile-customer-api-config">
+        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core">
+            <ee:variables>
+                <ee:set-variable variableName="product_id">attributes.uriParams.product_id</ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  id: "231231",
+  name: "Chuck Norris action toy",
+  full_description: "Chuck norris action toy description",
+  rel_self: "http://alc.mulesoft.com/api/products/product/1231231",
+  rating: 1.2,
+  available_stock: 4,
+  unit_price: 19.00,
+  unit_original_price: 19.00,
+  pictures: [
+    "http://img3.wikia.nocookie.net/__cb20080312162141/uncyclopedia/images/d/dc/Chuck-norris-002.jpg", 
+    "http://img3.wikia.nocookie.net/__cb20080312162141/uncyclopedia/images/d/dc/Chuck-norris-002.jpg", 
+    "http://img3.wikia.nocookie.net/__cb20080312162141/uncyclopedia/images/d/dc/Chuck-norris-002.jpg"
+  ]
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+    <flow name="get:\orders\search:mobile-customer-api-config">
+        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+[
+  {
+    order_id: "order_22",
+    tracking_code: "12310391209318",
+    rel_self: "http://alc.mulesoft.com/api/orders/oder/order_22",
+    creation_date: "2015/12/31 10:00:00",
+    cost: {
+      price: 12.0,
+      tax: 1.0,
+      final_price: 13.0
+    },
+    shipping: {
+      shipping_address_id: "1122",
+      rel_address: "http://alc.mulesoft.com/api/users/user/vip_user_8/address/1122"
+    },
+    items: [
+      {
+        product_id: "121",
+        rel_product: "http://alc.mulesoft.com/api/products/product/121",
+        quantity: 1
+      }, 
+      {
+        product_id: "122",
+        rel_product: "http://alc.mulesoft.com/api/products/product/122",
+        quantity: 2
+      }
+    ]
+  }, 
+  {
+    order_id: "order_23",
+    tracking_code: "12310391209318",
+    rel_self: "http://alc.mulesoft.com/api/orders/oder/order_22",
+    creation_date: "2015/12/31 10:00:00",
+    cost: {
+      price: 12.0,
+      tax: 1.0,
+      final_price: 13.0
+    },
+    shipping: {
+      shipping_address_id: "1122",
+      rel_address: "http://alc.mulesoft.com/api/users/user/vip_user_8/address/1122"
+    },
+    items: [
+      {
+        product_id: "121",
+        rel_product: "http://alc.mulesoft.com/api/products/product/121",
+        quantity: 1
+      }, 
+      {
+        product_id: "122",
+        rel_product: "http://alc.mulesoft.com/api/products/product/122",
+        quantity: 2
+      }
+    ]
+  }
+]]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+    <flow name="get:\products\search:mobile-customer-api-config">
+        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+[
+  {
+    id: "1231231",
+    rel_self: "http://alc.mulesoft.com/api/products/product/1231231",
+    name: "Chuck Norris action toy",
+    full_description: "Chuck norris action toy description",
+    pictures: [
+      "http://img3.wikia.nocookie.net/__cb20080312162141/uncyclopedia/images/d/dc/Chuck-norris-002.jpg", 
+      "http://img3.wikia.nocookie.net/__cb20080312162141/uncyclopedia/images/d/dc/Chuck-norris-002.jpg", 
+      "http://img3.wikia.nocookie.net/__cb20080312162141/uncyclopedia/images/d/dc/Chuck-norris-002.jpg"
+    ],
+    rating: 1.2,
+    available_stock: 4,
+    unit_price: 19.00,
+    unit_original_price: 19.00
+  }, 
+  {
+    id: "1231231",
+    rel_self: "http://alc.mulesoft.com/api/products/product/1231231",
+    name: "Chuck Norris action toy",
+    full_description: "Chuck norris action toy description",
+    pictures: [
+      "http://img3.wikia.nocookie.net/__cb20080312162141/uncyclopedia/images/d/dc/Chuck-norris-002.jpg", 
+      "http://img3.wikia.nocookie.net/__cb20080312162141/uncyclopedia/images/d/dc/Chuck-norris-002.jpg", 
+      "http://img3.wikia.nocookie.net/__cb20080312162141/uncyclopedia/images/d/dc/Chuck-norris-002.jpg"
+    ],
+    rating: 1.2,
+    available_stock: 4,
+    unit_price: 19.00,
+    unit_original_price: 19.00
+  }
+]]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+    <flow name="get:\user\(userId)\shopping_cart:mobile-customer-api-config">
+        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core">
+            <ee:variables>
+                <ee:set-variable variableName="userId">attributes.uriParams.userId</ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  last_modification_date: "2015/12/31 10:00:00",
+  cost: {
+    price: 11.0,
+    tax: 1.0,
+    final_price: 12.0
+  },
+  items: [
+    {
+      product_id: "12312",
+      rel_product: "http://alc.mulesoft.com/api/products/product/12312",
+      quantity: 1
+    }, 
+    {
+      product_id: "12313",
+      rel_product: "http://alc.mulesoft.com/api/products/product/12312",
+      quantity: 1
+    }
+  ]
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+    <flow name="get:\user\(userId):mobile-customer-api-config">
+        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core">
+            <ee:variables>
+                <ee:set-variable variableName="userId">attributes.uriParams.userId</ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  id: "12",
+  username: "matias.suarez",
+  email: "matias.suarez@mulesoft.com",
+  firstname: "matias",
+  lastname: "suarez",
+  password: "123456",
+  mobile_number: "1256650432"
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+    <flow name="post:\user\(userId)\shopping_cart\confirmation:application\json:mobile-customer-api-config">
+        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core">
+            <ee:variables>
+                <ee:set-variable variableName="userId">attributes.uriParams.userId</ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  order_id: "order_22",
+  order_number: "order_22_worldwide",
+  tracking_code: "AA8839II989",
+  eta: "2016/12/31 10:00:00",
+  shipping: {
+    shipping_address_id: "1122",
+    rel_address: "http://alc.mulesoft.com/api/users/user/vip_user_8/address/1122"
+  },
+  items: [
+    {
+      product_id: "121",
+      rel_product: "http://alc.mulesoft.com/api/products/product/121",
+      quantity: 1
+    }, 
+    {
+      product_id: "122",
+      rel_product: "http://alc.mulesoft.com/api/products/product/122",
+      quantity: 2
+    }
+  ]
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+    <flow name="post:\session:application\json:mobile-customer-api-config">
+        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  id: "12",
+  username: "matias.suarez",
+  email: "matias.suarez@mulesoft.com",
+  firstname: "matias",
+  lastname: "suarez",
+  password: "123456",
+  mobile_number: "1256650432"
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+    <flow name="post:\user:application\json:mobile-customer-api-config">
+        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  id: "12",
+  username: "matias.suarez",
+  email: "matias.suarez@mulesoft.com",
+  firstname: "matias",
+  lastname: "suarez",
+  password: "123456",
+  mobile_number: "1256650432"
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+</mule>
