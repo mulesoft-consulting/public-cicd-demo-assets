@@ -8,7 +8,7 @@ pipeline {
     BG="Admin"
     WORKER = "MICRO"
     ENVIRONMENT = 'Production'
-    APP_NAME = 'public-cicd-apps-cleanup'
+    APP_NAME = 'cicd-apps-cleanup'
   }
 
   stages {
