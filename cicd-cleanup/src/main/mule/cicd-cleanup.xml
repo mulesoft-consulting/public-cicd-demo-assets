@@ -30,7 +30,7 @@ output application/json
 	"Content-Type" : "application/json"
 }]]]></http:headers>
 		</http:request>
-		<flow-ref doc:name="Flow Reference" doc:id="741059c4-4576-42ea-a790-24efd7b8367c" name="cleanApp"/>
+		<flow-ref doc:name="cleanApp" doc:id="741059c4-4576-42ea-a790-24efd7b8367c" name="cleanApp"/>
 		<logger level="INFO" doc:name="Log Ending Process" doc:id="05c844fc-635d-4102-956a-59ce7a7a09c8" message='#["Ending Process: " ++ now() as String {format: "yyyy-MM-dd HH:mm:ss"}]'/>
 	</flow>
 	<flow name="cleanApp" doc:id="8df2e716-bdb7-4a4c-8e5d-cd0b062d101a">
@@ -94,7 +94,7 @@ var skipApps = p('skipApps') splitBy "," map trim($)
 		<validation:is-not-empty-collection doc:name="Is not empty collection" doc:id="9ce62de7-b44f-4a09-8d1b-caa07e895921" />
 		<foreach doc:name="For Each" doc:id="cf549e0f-2ca1-4f52-b9bb-91fd195c2c33" >
 			<set-variable value="#[if (payload.env == &quot;dev&quot;) p('anypoint.devEnv') else p('anypoint.prdEnv')]" doc:name="Save Environment" doc:id="abb10127-b5f4-4f75-a910-9a9e3bcf69df" variableName="environment"/>
-			<flow-ref doc:name="Delete Suite" doc:id="1a9564be-ab4b-4be0-a1f7-491afcd84431" name="clean-functional-monitoring"/>
+			<flow-ref doc:name="clean-functional-monitoring" doc:id="1a9564be-ab4b-4be0-a1f7-491afcd84431" name="clean-functional-monitoring"/>
 			<http:request method="DELETE" doc:name="Delete Application" doc:id="5a7c4864-7291-4061-8170-564013f5a7c8" config-ref="HTTP_Request_configuration" path="/cloudhub/api/v2/applications/{app_name}">
 				<http:body ><![CDATA[#[output application/json
 ---
