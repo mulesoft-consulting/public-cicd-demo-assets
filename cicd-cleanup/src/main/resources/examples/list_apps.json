@@ -1,21 +1,56 @@
-{
-    "data": [
-        {
-            "id": "1p-public-cicd-mock",
-            "target": {
-                "type": "CLOUDHUB"
-            },
-            "artifact": {
-                "lastUpdateTime": 1548273879615,
-                "createTime": null,
-                "name": "1p-public-cicd-mock",
-                "fileName": "1p-public-cicd-mock-1.0.0-SNAPSHOT-mule-application.jar"
-            },
-            "lastReportedStatus": "STARTED",
-            "details": {
-                "domain": "1p-public-cicd-mock.us-e2.cloudhub.io"
-            }
-        }
-    ],
-    "total": 1
-}
+[
+    {
+        "groupId": "b0a11a10-9a2e-4b71-b6b6-88c719e79179",
+        "assetId": "fb-mobile-customer-api_20190611131958",
+        "organizationId": "b0a11a10-9a2e-4b71-b6b6-88c719e79179",
+        "lastExecuted": "",
+        "name": "fb-mobile-customer-api_20190611131958",
+        "description": "",
+        "type": "api-test"
+    },
+    {
+        "groupId": "b0a11a10-9a2e-4b71-b6b6-88c719e79179",
+        "assetId": "fb-mobile-customer-api-jimil_20190510005428",
+        "organizationId": "b0a11a10-9a2e-4b71-b6b6-88c719e79179",
+        "lastExecuted": "",
+        "name": "fb-mobile-customer-api-jimil_20190510005428",
+        "description": "",
+        "type": "api-test"
+    },
+    {
+        "groupId": "b0a11a10-9a2e-4b71-b6b6-88c719e79179",
+        "assetId": "fb-mobile-customer-api_20190510005358",
+        "organizationId": "b0a11a10-9a2e-4b71-b6b6-88c719e79179",
+        "lastExecuted": "",
+        "name": "fb-mobile-customer-api_20190510005358",
+        "description": "",
+        "type": "api-test"
+    },
+    {
+        "groupId": "b0a11a10-9a2e-4b71-b6b6-88c719e79179",
+        "assetId": "fb-mobile-customer-api-jimil_20190508233929",
+        "organizationId": "b0a11a10-9a2e-4b71-b6b6-88c719e79179",
+        "lastExecuted": "",
+        "name": "fb-mobile-customer-api-jimil_20190508233929",
+        "description": "",
+        "type": "api-test"
+    },
+    {
+        "groupId": "b0a11a10-9a2e-4b71-b6b6-88c719e79179",
+        "assetId": "fb-mobile-customer-api_20190508213637",
+        "organizationId": "b0a11a10-9a2e-4b71-b6b6-88c719e79179",
+        "lastExecuted": "",
+        "name": "fb-mobile-customer-api_20190508213637",
+        "description": "",
+        "type": "api-test"
+    },
+    {
+        "groupId": "b0a11a10-9a2e-4b71-b6b6-88c719e79179",
+        "assetId": "fb-mobile-customer-api_20190423013518",
+        "organizationId": "b0a11a10-9a2e-4b71-b6b6-88c719e79179",
+        "lastExecuted": "",
+        "name": "fb-mobile-customer-api_20190423013518",
+        "description": "",
+        "type": "api-test"
+    }
+]

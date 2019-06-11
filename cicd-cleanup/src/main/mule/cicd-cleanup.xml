@@ -157,7 +157,7 @@ output application/java
 ---
 {
 	"org_id" : p('anypoint.org'),
-	"suite_id" : payload.id
+	"suite_id" : p('anypoint.org')++ ":" ++ payload.assetId
 }]]]></http:uri-params>
 			</http:request>
 		</foreach>
