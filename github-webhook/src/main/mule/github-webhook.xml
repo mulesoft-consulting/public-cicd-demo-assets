@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:tls="http://www.mulesoft.org/schema/mule/tls"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="95e9cac4-2aa7-48c8-a562-839e9dd74e39" >
+		<http:listener-connection host="0.0.0.0" port="8082" protocol="HTTPS">
+			<tls:context >
+				<tls:key-store type="jks" path="keystore.jks" keyPassword="Mule1379?" password="Mule1379?" />
+			</tls:context>
+		</http:listener-connection>
+	</http:listener-config>
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="562b527c-85bd-4f79-b2f0-c7cdb7ee1578" >
+		<db:my-sql-connection host="${mysql.host}" port="${mysql.port}" user="${mysql.user}" password="${mysql.password}" database="${mysql.db}" />
+	</db:config>
+	<configuration-properties doc:name="Configuration properties" doc:id="f3d414b1-dd86-4e1a-a2c9-29ea42e45714" file="config/configuration.yaml" />
+	<flow name="github-webhookFlow" doc:id="4b53edac-3989-4dd7-818b-5126db2812ba" >
+		<http:listener doc:name="Listener" doc:id="cf17c4b5-ca0f-470d-8dbb-d2b9e810e565" config-ref="HTTP_Listener_config" path="/webhook" allowedMethods="GET, POST, PUT, DELETE"/>
+		<db:insert doc:name="Insert" doc:id="ceb7ddcd-2db6-408f-bb9f-8dd52f06b75d" config-ref="Database_Config" autoGenerateKeys="true">
+			<db:sql >INSERT INTO 1platform_admin.report_metrics_cicd_demo (timestamp, pusher_name, pusher_email, message) 
+VALUES(:timestamp, :name, :email, :message)</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+    timestamp: payload.head_commit.timestamp as LocalDateTime as String {format: "yyyy-MM-dd HH:mm:ss"},
+    name: payload.head_commit.author.name,
+    email: payload.head_commit.author.email,
+    message: payload.head_commit.message
+}]]]></db:input-parameters>
+			<db:auto-generated-keys-column-names >
+				<db:auto-generated-keys-column-name value="id" />
+			</db:auto-generated-keys-column-names>
+		</db:insert>
+		<ee:transform doc:name="Transform Message" doc:id="f28e7e86-8873-4511-baa0-1b8c3dcb5256" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	id: payload.generatedKeys."GENERATED_KEY"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
