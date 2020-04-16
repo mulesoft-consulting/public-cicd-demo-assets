@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:validation="http://www.mulesoft.org/schema/mule/validation"
+<mule xmlns:cloudhub="http://www.mulesoft.org/schema/mule/cloudhub" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking"
+	xmlns:validation="http://www.mulesoft.org/schema/mule/validation"
 	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
-	xmlns:http="http://www.mulesoft.org/schema/mule/http"
-	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
 http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd
-http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/cloudhub http://www.mulesoft.org/schema/mule/cloudhub/current/mule-cloudhub.xsd">
+
 
 	<flow name="globalFlow" doc:id="da00c2ec-2679-4296-bb4d-a1a602d96844">
 		<scheduler doc:name="Scheduler" doc:id="ec8afd1f-258b-4561-aa6c-cef2fb76e03d">
@@ -32,6 +34,13 @@ output application/json
 		</http:request>
 		<flow-ref doc:name="cleanApp" doc:id="741059c4-4576-42ea-a790-24efd7b8367c" name="cleanApp"/>
 		<logger level="INFO" doc:name="Log Ending Process" doc:id="05c844fc-635d-4102-956a-59ce7a7a09c8" message='#["Ending Process: " ++ now() as String {format: "yyyy-MM-dd HH:mm:ss"}]'/>
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="91a110f3-da8e-45fe-9a8b-f3b0ac7df48b" >
+				<cloudhub:create-notification domain="cicd-cleanup" doc:name="Create Notification" doc:id="a9483206-4a3e-44c4-b9d0-2b158974f5c6" config-ref="CloudHub_Config" priority="ERROR">
+					<cloudhub:message ><![CDATA[#["There was an error executing job: " ++ (error.description default "Unknown Error")]]]></cloudhub:message>
+				</cloudhub:create-notification>
+			</on-error-continue>
+		</error-handler>
 	</flow>
 	<flow name="cleanApp" doc:id="8df2e716-bdb7-4a4c-8e5d-cd0b062d101a">
 		<scatter-gather doc:name="Scatter-Gather" doc:id="125feacb-4c57-4aa8-a713-bc39b77b7411" >
@@ -125,7 +134,7 @@ var skipApps = p('skipApps') splitBy "," map trim($)
 	</flow>
 	<flow name="clean-functional-monitoring" doc:id="a6173584-6dc1-4041-b28a-bd2e9c6dec1f" >
 		<set-variable value='#[payload.name default ""]' doc:name="Save Application Name" doc:id="bf1e7018-0561-4a73-9543-23d517f9641e" variableName="applicationName"/>
-		<http:request method="GET" doc:name="List Suites" doc:id="7dc2311c-1ec9-48a4-a6ab-eddbceb7e3d2" config-ref="HTTP_Request_configuration" path="/apitesting/api/v1/organizations/{org_id}/suites">
+		<http:request method="GET" doc:name="List Suites" doc:id="7dc2311c-1ec9-48a4-a6ab-eddbceb7e3d2" config-ref="HTTP_Request_configuration" path="/apitesting/xapi/v1/organizations/{org_id}/schedules">
 			<http:headers ><![CDATA[#[output application/java
 ---
 {
@@ -147,7 +156,7 @@ output application/java
 		</ee:transform>
 		<validation:is-not-empty-collection doc:name="Is not empty collection" doc:id="f0cc283c-4087-410e-b4b0-b0d9c2a49ba4" />
 		<foreach doc:name="For Each" doc:id="05813930-4b67-4b1b-bbf8-f80626372e4b" >
-			<http:request method="DELETE" doc:name="Delete Suite" doc:id="b7b0d5a7-9981-4e9f-963c-5ab0d2d242d7" config-ref="HTTP_Request_configuration" path="/apitesting/api/v1/organizations/{org_id}/suites/{suite_id}/versions/0.0.1">
+			<http:request method="DELETE" doc:name="Delete Suite" doc:id="b7b0d5a7-9981-4e9f-963c-5ab0d2d242d7" config-ref="HTTP_Request_configuration" path="/apitesting/api/v1/organizations/{org_id}/suites/{suite_id}">
 				<http:headers ><![CDATA[#[output application/java
 ---
 {
