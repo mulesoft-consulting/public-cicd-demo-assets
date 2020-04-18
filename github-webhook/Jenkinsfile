@@ -15,7 +15,7 @@ pipeline {
     ENVIRONMENT = 'Production'
     APP_NAME = 'public-cicd-demo-metrics'
     MYSQL_CREDS = credentials("1platform-assets-cleaner_mysql")
-    ANYPOINT_ENV - credentials("${BRANCH_NAME}-anypoint-env")
+    ANYPOINT_ENV = credentials("${BRANCH_NAME}-anypoint-env")
   }
 
   stages {
