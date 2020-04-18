@@ -8,7 +8,7 @@ pipeline {
   }
 
   environment { //Global Environments
-    DEPLOY_CREDS = credentials('deploy-anypoint-user') //Deployer user
+    DEPLOY_CREDS = credentials("1platform-assets-cleaner_anypoint-platform") //Deployer user
     MULE_VERSION = '4.2.2'
     BG="Admin"
     WORKER = "MICRO"
