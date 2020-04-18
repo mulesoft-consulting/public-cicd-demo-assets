@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:api-gateway="http://www.mulesoft.org/schema/mule/api-gateway" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
-	xmlns:db="http://www.mulesoft.org/schema/mule/db"
-	xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:api-gateway="http://www.mulesoft.org/schema/mule/api-gateway"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
-http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/mule/api-gateway/current/mule-api-gateway.xsd">
+http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/mule/api-gateway/current/mule-api-gateway.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
 	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="95e9cac4-2aa7-48c8-a562-839e9dd74e39" >
-		<http:listener-connection host="0.0.0.0" port="${http.port}" protocol="HTTPS">
+		<http:listener-connection host="0.0.0.0" port="${https.port}" protocol="HTTPS">
 			<tls:context >
 				<tls:key-store type="jks" path="${keystore.path}" keyPassword="${keystore.password}" password="${keystore.password}" />
 			</tls:context>
@@ -21,7 +22,8 @@ http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/m
 	<configuration-properties doc:name="Configuration properties" doc:id="f3d414b1-dd86-4e1a-a2c9-29ea42e45714" file="config/configuration.yaml" />
 	<api-gateway:autodiscovery apiId="${api.autodiscovery}" doc:name="API Autodiscovery" doc:id="ad073d96-fae1-4d20-a2e8-633ee5a6adc6" flowRef="github-webhookFlow" />
 	<flow name="github-webhookFlow" doc:id="4b53edac-3989-4dd7-818b-5126db2812ba" >
-		<http:listener doc:name="Listener" doc:id="cf17c4b5-ca0f-470d-8dbb-d2b9e810e565" config-ref="HTTP_Listener_config" path="/webhook" allowedMethods="GET, POST, PUT, DELETE" outputMimeType="text/plain"/>
+		<http:listener doc:name="Listener" doc:id="cf17c4b5-ca0f-470d-8dbb-d2b9e810e565" config-ref="HTTP_Listener_config" path="/webhook" allowedMethods="POST" outputMimeType="text/plain"/>
+		<validation:is-true doc:name="Validate there was a push" doc:id="641a1889-efe4-497c-8438-6efa874d650e" expression="#[attributes.headers['x-github-event'] == 'push']" message="Is not a Push Event"/>
 		<db:insert doc:name="Insert" doc:id="ceb7ddcd-2db6-408f-bb9f-8dd52f06b75d" config-ref="Database_Config" autoGenerateKeys="true">
 			<db:sql >INSERT INTO report_metrics_cicd_demo (timestamp, pusher_name, pusher_email, message) 
 VALUES(:timestamp, :name, :email, :message)</db:sql>
@@ -48,5 +50,19 @@ output application/json
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
+		<error-handler >
+			<on-error-continue enableNotifications="false" logException="false" doc:name="On Error Continue" doc:id="5651e856-cdad-41aa-8ad4-811e975ff01a" type="VALIDATION:INVALID_BOOLEAN">
+				<ee:transform doc:name="Transform Message" doc:id="eb6800cb-fa1a-4dbc-ac84-9b338366f74e" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "OK"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-continue>
+		</error-handler>
 	</flow>
 </mule>
