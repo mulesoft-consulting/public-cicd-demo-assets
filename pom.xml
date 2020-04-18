@@ -11,6 +11,7 @@
 
         <modules>
                 <module>cicd-cleanup</module>
+                <module>github-webhook</module>
         </modules>
 
 </project>

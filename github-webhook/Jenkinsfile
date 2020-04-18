@@ -1,0 +1,51 @@
+pipeline {
+  agent {
+    label 'mule-builder' // Name of the configure docker container
+  }
+
+  options {
+        buildDiscarder(logRotator(numToKeepStr: '3'))
+  }
+
+  environment { //Global Environments
+    DEPLOY_CREDS = credentials('deploy-anypoint-user') //Deployer user
+    MULE_VERSION = '4.2.2'
+    BG="Admin"
+    WORKER = "MICRO"
+    ENVIRONMENT = 'Production'
+    APP_NAME = 'public-cicd-demo-metrics'
+    MYSQL_CREDS = credentials("1platform-assets-cleaner_mysql")
+    ANYPOINT_ENV - credentials("${BRANCH_NAME}-anypoint-env")
+  }
+
+  stages {
+    stage('Prepare') {//Copy the configuration file according to the environment
+      steps {
+        configFileProvider([configFile(fileId: "${BRANCH_NAME}-configuration.yaml", replaceTokens: true, targetLocation: './github-webhook/src/main/resources/config/configuration.yaml')]) {
+            sh 'echo "Branch NAME: $BRANCH_NAME"'
+        }
+      }
+    }
+    stage('Build') {//Build the package
+      steps {
+        sh 'mvn -B -pl github-webhook clean package -DskipTests'
+      }
+    }
+
+    stage('Deploy') {//Deploy to Production
+        steps {
+          sh 'mvn -V -B -DskipTests -pl github-webhook deploy -DmuleDeploy -Denv.ANYPOINT_CLIENT_ID=ANYPOINT_ENV_USR -Denv.ANYPOINT_CLIENT_SECRET=ANYPOINT_ENV_PSW -Dmule.version=$MULE_VERSION -Danypoint.username=$DEPLOY_CREDS_USR -Danypoint.password=$DEPLOY_CREDS_PSW -Dcloudhub.app=$APP_NAME -Dcloudhub.environment=$ENVIRONMENT -Dcloudhub.worker=$WORKER -Dcloudhub.bg="$BG" -Dmysql.user=$MYSQL_CREDS_USR -Dmysql.password=$MYSQL_CREDS_PSW'
+        }
+    }
+  }
+
+  post {
+      always {
+       step([$class: 'hudson.plugins.chucknorris.CordellWalkerRecorder'])
+      }
+  }  
+
+  tools {// Select Tools to use
+    maven 'M3'
+  }
+}
